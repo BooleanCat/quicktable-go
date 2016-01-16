@@ -1,2 +1,2 @@
 # noinspection PyUnresolvedReferences
-from quicktable.binding import add
+from quicktable.table import Table

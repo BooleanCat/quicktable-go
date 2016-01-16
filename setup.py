@@ -2,7 +2,6 @@ import os
 import shutil
 import subprocess
 from setuptools import setup
-from contextlib import contextmanager
 from setuptools.command.install import install
 
 
@@ -10,35 +9,47 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.join(PROJECT_DIR, 'lib')
 PKG_DIR = os.path.join(PROJECT_DIR, 'pkg')
 BUILD_DIR = os.path.join(PROJECT_DIR, 'build')
+SOURCE_DIR = os.path.join(PROJECT_DIR, 'quicktable')
 
 
 class InstallQuicktable(install):
-    GO_LIBS = {
-        'add.go': 'libadd.so',
-    }
+    GO_SOURCES = ['table.go', 'utils.go']
+    GO_SOURCE_PATHS = [os.path.join(LIB_DIR, source) for source in GO_SOURCES]
+    LIB_NAME = 'libquicktable.so'
 
     def run(self):
         """Build the quicktable module."""
 
-        try:
-            shutil.rmtree(BUILD_DIR)
-        except FileNotFoundError:
-            pass
-
-        try:
-            shutil.rmtree(PKG_DIR)
-        except FileNotFoundError:
-            os.mkdir(PKG_DIR)
-
+        self.rm_tree(BUILD_DIR)
         self.build_go()
+        self.copy(os.path.join(PKG_DIR, self.LIB_NAME), SOURCE_DIR)
 
-        with self._manage_libs():
-            super().run()
+        super().run()
 
+        self.rm_tree(PKG_DIR)
+        self.rm_tree(os.path.join(PROJECT_DIR, 'quicktable.egg-info'))
+        self.unlink(os.path.join(SOURCE_DIR, self.LIB_NAME))
+
+    @staticmethod
+    def rm_tree(path):
+        print('removing %s' % path)
         try:
-            shutil.rmtree(os.path.join(PROJECT_DIR, 'quicktable.egg-info'))
+            shutil.rmtree(path)
         except FileNotFoundError:
             pass
+
+    @staticmethod
+    def unlink(path):
+        print('removing %s' % path)
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
+
+    @staticmethod
+    def copy(source, target):
+        print('copying %s -> %s' % (source, target))
+        shutil.copy(source, target)
 
     @classmethod
     def build_go(cls):
@@ -48,55 +59,15 @@ class InstallQuicktable(install):
 
         """
 
-        print('building Go packages')
+        print('building Go package')
 
-        for source, lib in cls.GO_LIBS.items():
-            print('%s -> %s' % (source, lib))
-
-            subprocess.call([
-                'go',
-                'build',
-                '-buildmode=c-shared',
-                '-o',
-                os.path.join(PKG_DIR, lib),
-                os.path.join(LIB_DIR, source),
-            ])
-
-        print('finished building go packages')
-
-    @classmethod
-    @contextmanager
-    def _manage_libs(cls):
-        try:
-            libs = cls.join_paths([PKG_DIR], cls.GO_LIBS.values())
-            for lib in libs:
-                path = os.path.join(PROJECT_DIR, 'quicktable')
-
-                print('copying %s -> %s' % (lib, path))
-                shutil.copy(lib, os.path.join(PROJECT_DIR, path))
-            yield
-        finally:
-            libs = cls.join_paths([PROJECT_DIR, 'quicktable'], cls.GO_LIBS.values())
-            for lib in libs:
-                print('removing %s' % lib)
-
-                try:
-                    os.remove(lib)
-                except FileNotFoundError:
-                    pass
-
-    @staticmethod
-    def join_paths(root, suffixes):
-        """Join root path to each of suffixes.
-
-        :param root: path in the from ['my', 'awesome', 'path']
-        :param suffixes: list of suffices to join to root
-
-        :returns: a map of os.path.join(root, suffix) of suffixes
-
-        """
-        
-        return map(lambda suffix: os.path.join(*root, suffix), suffixes)
+        subprocess.call([
+            'go',
+            'build',
+            '-buildmode=c-shared',
+            '-o',
+            os.path.join(PKG_DIR, cls.LIB_NAME),
+        ] + cls.GO_SOURCE_PATHS)
 
 
 setup(
@@ -104,5 +75,5 @@ setup(
     version='0.0.1',
     cmdclass={'install': InstallQuicktable},
     packages=['quicktable'],
-    package_data={'quicktable': list(InstallQuicktable.GO_LIBS.values())}
+    package_data={'quicktable': [InstallQuicktable.LIB_NAME]}
 )
