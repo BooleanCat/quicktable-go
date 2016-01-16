@@ -1,7 +1,6 @@
 .python-version
 .idea/
 build/
-*.egg-info
 pkg/
 .DS_Store
 __pycache__/
