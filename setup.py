@@ -18,6 +18,8 @@ class InstallQuicktable(install):
     }
 
     def run(self):
+        """Build the quicktable module."""
+
         try:
             shutil.rmtree(BUILD_DIR)
         except FileNotFoundError:
@@ -30,7 +32,7 @@ class InstallQuicktable(install):
 
         self.build_go()
 
-        with self.manage_libs():
+        with self._manage_libs():
             super().run()
 
         try:
@@ -40,6 +42,12 @@ class InstallQuicktable(install):
 
     @classmethod
     def build_go(cls):
+        """Build Go libraries requires for quicktable.
+
+        For each source file in PROJECT_DIR/lib, produce a lib{source}.so file in PROJECT_DIR/pkg.
+
+        """
+
         print('building Go packages')
 
         for source, lib in cls.GO_LIBS.items():
@@ -58,9 +66,9 @@ class InstallQuicktable(install):
 
     @classmethod
     @contextmanager
-    def manage_libs(cls):
+    def _manage_libs(cls):
         try:
-            libs = map(lambda lib_name: os.path.join(PKG_DIR, lib_name), cls.GO_LIBS.values())
+            libs = cls.join_paths([PKG_DIR], cls.GO_LIBS.values())
             for lib in libs:
                 path = os.path.join(PROJECT_DIR, 'quicktable')
 
@@ -68,7 +76,7 @@ class InstallQuicktable(install):
                 shutil.copy(lib, os.path.join(PROJECT_DIR, path))
             yield
         finally:
-            libs = map(lambda lib_name: os.path.join(PROJECT_DIR, 'quicktable', lib_name), cls.GO_LIBS.values())
+            libs = cls.join_paths([PROJECT_DIR, 'quicktable'], cls.GO_LIBS.values())
             for lib in libs:
                 print('removing %s' % lib)
 
@@ -76,6 +84,19 @@ class InstallQuicktable(install):
                     os.remove(lib)
                 except FileNotFoundError:
                     pass
+
+    @staticmethod
+    def join_paths(root, suffixes):
+        """Join root path to each of suffixes.
+
+        :param root: path in the from ['my', 'awesome', 'path']
+        :param suffixes: list of suffices to join to root
+
+        :returns: a map of os.path.join(root, suffix) of suffixes
+
+        """
+        
+        return map(lambda suffix: os.path.join(*root, suffix), suffixes)
 
 
 setup(
