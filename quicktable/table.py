@@ -1,13 +1,19 @@
-from quicktable.binding import table_new, table_name, table_free
+from quicktable import binding
 
 
 class Table:
     def __init__(self):
-        self._table_ptr = table_new()
+        self._table_ptr = binding.table_new()
 
     @property
     def name(self):
-        return table_name(self._table_ptr)
+        return binding.table_name(self._table_ptr)
+
+    def append(self):
+        binding.table_append(self._table_ptr)
+
+    def __len__(self):
+        return binding.table_len(self._table_ptr)
 
     def __del__(self):
-        table_free(self._table_ptr)
+        binding.table_free(self._table_ptr)

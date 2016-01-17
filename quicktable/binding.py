@@ -45,6 +45,18 @@ _lib.TableName.restype = LP_c_char
 table_name = with_string_free(_lib.TableName)
 
 
+# TableLen
+_lib.TableLen.argtypes = [LP_c_ulonglong]
+_lib.TableLen.restype = ctypes.c_longlong
+table_len = _lib.TableLen
+
+
+# TableAppend
+_lib.TableAppend.argtypes = [LP_c_ulonglong]
+_lib.TableAppend.restype = None
+table_append = _lib.TableAppend
+
+
 # TableFree
 _lib.TableFree.argtypes = [LP_c_ulonglong]
 _lib.TableFree.restype = None
