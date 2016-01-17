@@ -12,7 +12,7 @@ var tables = make(map[*uint64]*Table)
 
 //export TableNew
 func TableNew() *uint64 {
-	table := &Table{ "Foo" }
+	table := &Table{"Foo"}
 	ptr := (*uint64)(unsafe.Pointer(table))
 
 	tables[ptr] = table
