@@ -39,16 +39,42 @@ _lib.TableNew.restype = LP_c_ulonglong
 table_new = _lib.TableNew
 
 
-# TableName
-_lib.TableName.argtypes = [LP_c_ulonglong]
-_lib.TableName.restype = LP_c_char
-table_name = with_string_free(_lib.TableName)
+# TableColumnName
+_lib.TableColumnName.argtypes = [LP_c_ulonglong, ctypes.c_longlong]
+_lib.TableColumnName.restype = LP_c_char
+column_name = with_string_free(_lib.TableColumnName)
+
+
+# TableColumnType
+_lib.TableColumnType.argtypes = [LP_c_ulonglong, ctypes.c_longlong]
+_lib.TableColumnType.restype = LP_c_char
+column_type = with_string_free(_lib.TableColumnType)
+
+
+# TableCreateColumns
+_lib.TableNewColumn.argtypes = [LP_c_ulonglong, LP_c_char, LP_c_char]
+_lib.TableNewColumn.restype = None
+
+
+def new_columns(table, schema):
+    for name, kind in schema:
+        _lib.TableNewColumn(
+            table,
+            ctypes.create_string_buffer(name.encode()),
+            ctypes.create_string_buffer(kind.encode())
+        )
 
 
 # TableLen
 _lib.TableLen.argtypes = [LP_c_ulonglong]
 _lib.TableLen.restype = ctypes.c_longlong
 table_len = _lib.TableLen
+
+
+# TableWidth
+_lib.TableWidth.argtypes = [LP_c_ulonglong]
+_lib.TableWidth.restype = ctypes.c_longlong
+table_width = _lib.TableWidth
 
 
 # TableAppend

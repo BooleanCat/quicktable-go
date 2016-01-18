@@ -4,7 +4,7 @@ from unittest import TestCase
 
 class TestTable(TestCase):
     def setUp(self):
-        self.table = Table()
+        self.table = Table([])
 
     def test_table_empty(self):
         """A new table will have a length of 0."""

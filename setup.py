@@ -13,7 +13,7 @@ SOURCE_DIR = os.path.join(PROJECT_DIR, 'quicktable')
 
 
 class InstallQuicktable(install):
-    GO_SOURCES = ['table.go', 'utils.go', 'table_bindings.go']
+    GO_SOURCES = ['table.go', 'utils.go', 'table_bindings.go', 'column.go']
     GO_SOURCE_PATHS = [os.path.join(LIB_DIR, source) for source in GO_SOURCES]
     LIB_NAME = 'libquicktable.so'
 
