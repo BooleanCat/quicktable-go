@@ -1,5 +1,5 @@
 import re
-from quicktable import binding
+from quicktable.binding import Binding
 
 
 class Table:
@@ -8,7 +8,8 @@ class Table:
 
     def __init__(self, schema):
         schema = self.validate_schema(schema)
-        self._table_ptr = binding.table_new()
+        self._table_ptr = Binding.table_new()
+        self.binding = Binding(self._table_ptr)
         self._init_columns(schema)
 
     @classmethod
@@ -26,21 +27,21 @@ class Table:
         return schema
 
     def _init_columns(self, schema):
-        binding.new_columns(self._table_ptr, schema)
+        self.binding.init_columns(schema)
 
     @property
     def width(self):
-        return binding.table_width(self._table_ptr)
+        return self.binding.table_width()
 
     @property
     def column_names(self):
         """An list of column names in the schema."""
-        return [binding.column_name(self._table_ptr, i) for i in range(self.width)]
+        return [self.binding.table_column_name(i) for i in range(self.width)]
 
     @property
     def column_types(self):
         """An list of column types in the schema."""
-        return [binding.column_type(self._table_ptr, i) for i in range(self.width)]
+        return [self.binding.table_column_type(i) for i in range(self.width)]
 
     @property
     def schema(self):
@@ -48,10 +49,10 @@ class Table:
         return list(zip(self.column_names, self.column_types))
 
     def append(self):
-        binding.table_append(self._table_ptr)
+        self.binding.table_append()
 
     def __len__(self):
-        return binding.table_len(self._table_ptr)
+        return self.binding.table_len()
 
     def __del__(self):
         """Free the underlying table.
@@ -60,6 +61,6 @@ class Table:
 
         """
         try:
-            binding.table_free(self._table_ptr)
+            self.binding.table_free()
         except AttributeError:
             pass

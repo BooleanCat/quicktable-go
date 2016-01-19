@@ -1,10 +1,9 @@
 import os
 import ctypes
 from ctypes import cdll
-from functools import wraps
 
-LP_c_char = ctypes.POINTER(ctypes.c_char)
-LP_c_ulonglong = ctypes.POINTER(ctypes.c_ulonglong)
+p_c_char = ctypes.POINTER(ctypes.c_char)
+p_c_ulonglong = ctypes.POINTER(ctypes.c_ulonglong)
 
 FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 LIB_PATH = os.path.join(FILE_PATH, 'libquicktable.so')
@@ -12,78 +11,90 @@ LIB_PATH = os.path.join(FILE_PATH, 'libquicktable.so')
 _lib = cdll.LoadLibrary(LIB_PATH)
 
 
-# StringFree
-_lib.StringFree.argtypes = [LP_c_char]
-_lib.StringFree.restype = None
-free_string = _lib.StringFree
+BINDING_PARAMS = {
+    'StringFree': {
+        'argtypes': [p_c_char],
+    },
+    'TableNew': {
+        'restype': p_c_ulonglong,
+    },
+    'TableColumnName': {
+        'argtypes': [p_c_ulonglong, ctypes.c_longlong],
+        'restype': p_c_char,
+    },
+    'TableColumnType': {
+        'argtypes': [p_c_ulonglong, ctypes.c_longlong],
+        'restype': p_c_char,
+    },
+    'TableNewColumn': {
+        'argtypes': [p_c_ulonglong, p_c_char, p_c_char],
+    },
+    'TableLen': {
+        'argtypes': [p_c_ulonglong],
+        'restype': ctypes.c_longlong,
+    },
+    'TableWidth': {
+        'argtypes': [p_c_ulonglong],
+        'restype': ctypes.c_longlong,
+    },
+    'TableAppend': {
+        'argtypes': [p_c_ulonglong],
+    },
+    'TableFree': {
+        'argtypes': [p_c_ulonglong],
+    }
+}
 
 
-def str_from_c(ptr, encoding='UTF-8'):
-    return ctypes.cast(ptr, ctypes.c_char_p).value.decode(encoding)
+for lib_func, params in BINDING_PARAMS.items():
+    getattr(_lib, lib_func).argtypes = params.get('argtypes')
+    getattr(_lib, lib_func).restype = params.get('restype')
 
 
-def with_string_free(get_func):
-    @wraps(get_func)
-    def _wrapper(*args, **kwargs):
-        ptr = get_func(*args, **kwargs)
-        string = str_from_c(ptr)
-        free_string(ptr)
-        return string
+class Binding:
+    @staticmethod
+    def str_from_c(ptr, encoding='UTF-8'):
+        return ctypes.cast(ptr, ctypes.c_char_p).value.decode(encoding)
 
-    return _wrapper
+    @staticmethod
+    def free_string(string):
+        return _lib.StringFree(string)
 
+    @staticmethod
+    def table_new():
+        return _lib.TableNew()
 
-# TableNew
-_lib.TableNew.argtypes = None
-_lib.TableNew.restype = LP_c_ulonglong
-table_new = _lib.TableNew
+    def __init__(self, table):
+        self.table = table
 
+    def table_free(self):
+        return _lib.TableFree(self.table)
 
-# TableColumnName
-_lib.TableColumnName.argtypes = [LP_c_ulonglong, ctypes.c_longlong]
-_lib.TableColumnName.restype = LP_c_char
-column_name = with_string_free(_lib.TableColumnName)
+    def init_columns(self, schema):
+        for name, kind in schema:
+            _lib.TableNewColumn(
+                self.table,
+                ctypes.create_string_buffer(name.encode()),
+                ctypes.create_string_buffer(kind.encode())
+            )
 
+    def table_append(self):
+        return _lib.TableAppend(self.table)
 
-# TableColumnType
-_lib.TableColumnType.argtypes = [LP_c_ulonglong, ctypes.c_longlong]
-_lib.TableColumnType.restype = LP_c_char
-column_type = with_string_free(_lib.TableColumnType)
+    def table_len(self):
+        return _lib.TableLen(self.table)
 
+    def table_width(self):
+        return _lib.TableWidth(self.table)
 
-# TableCreateColumns
-_lib.TableNewColumn.argtypes = [LP_c_ulonglong, LP_c_char, LP_c_char]
-_lib.TableNewColumn.restype = None
+    def table_column_name(self, i):
+        c_string = _lib.TableColumnName(self.table, i)
+        py_string = self.str_from_c(c_string)
+        self.free_string(c_string)
+        return py_string
 
-
-def new_columns(table, schema):
-    for name, kind in schema:
-        _lib.TableNewColumn(
-            table,
-            ctypes.create_string_buffer(name.encode()),
-            ctypes.create_string_buffer(kind.encode())
-        )
-
-
-# TableLen
-_lib.TableLen.argtypes = [LP_c_ulonglong]
-_lib.TableLen.restype = ctypes.c_longlong
-table_len = _lib.TableLen
-
-
-# TableWidth
-_lib.TableWidth.argtypes = [LP_c_ulonglong]
-_lib.TableWidth.restype = ctypes.c_longlong
-table_width = _lib.TableWidth
-
-
-# TableAppend
-_lib.TableAppend.argtypes = [LP_c_ulonglong]
-_lib.TableAppend.restype = None
-table_append = _lib.TableAppend
-
-
-# TableFree
-_lib.TableFree.argtypes = [LP_c_ulonglong]
-_lib.TableFree.restype = None
-table_free = _lib.TableFree
+    def table_column_type(self, i):
+        c_string = _lib.TableColumnType(self.table, i)
+        py_string = self.str_from_c(c_string)
+        self.free_string(c_string)
+        return py_string
