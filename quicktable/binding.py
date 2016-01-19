@@ -1,6 +1,7 @@
 import os
 import ctypes
 from ctypes import cdll
+from contextlib import contextmanager
 
 p_c_char = ctypes.POINTER(ctypes.c_char)
 p_c_ulonglong = ctypes.POINTER(ctypes.c_ulonglong)
@@ -53,12 +54,23 @@ for lib_func, params in BINDING_PARAMS.items():
 
 class Binding:
     @staticmethod
-    def str_from_c(ptr, encoding='UTF-8'):
-        return ctypes.cast(ptr, ctypes.c_char_p).value.decode(encoding)
+    def py_str(cstring_ptr, encoding='UTF-8'):
+        """Create a Python string from a null-terminated C string.
+
+        :param cstring_ptr: pointer to a null-terminated C string
+        :param encoding: encoding of the C String
+
+        """
+        return ctypes.cast(cstring_ptr, ctypes.c_char_p).value.decode(encoding)
 
     @staticmethod
-    def free_string(string):
-        return _lib.StringFree(string)
+    def free_string(cstring_ptr):
+        """Free the C string created by the shared library.
+
+        :param cstring_ptr: pointer to a null-terminated C string
+
+        """
+        return _lib.StringFree(cstring_ptr)
 
     @staticmethod
     def table_new():
@@ -87,14 +99,27 @@ class Binding:
     def table_width(self):
         return _lib.TableWidth(self.table)
 
+    @contextmanager
+    def free_cstring(self, cstring_ptr):
+        try:
+            yield self.py_str(cstring_ptr)
+        finally:
+            self.free_string(cstring_ptr)
+
     def table_column_name(self, i):
-        c_string = _lib.TableColumnName(self.table, i)
-        py_string = self.str_from_c(c_string)
-        self.free_string(c_string)
-        return py_string
+        """Return the name of the column at index i within self.table.
+
+        :param i: integer corresponding to the column's index
+
+        """
+        with self.free_cstring(_lib.TableColumnName(self.table, i)) as name:
+            return name
 
     def table_column_type(self, i):
-        c_string = _lib.TableColumnType(self.table, i)
-        py_string = self.str_from_c(c_string)
-        self.free_string(c_string)
-        return py_string
+        """Return the name of the column at index i within self.table.
+
+        :param i: integer corresponding to the column's index
+
+        """
+        with self.free_cstring(_lib.TableColumnType(self.table, i)) as typ:
+            return typ

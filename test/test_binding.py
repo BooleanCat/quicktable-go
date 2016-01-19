@@ -50,9 +50,9 @@ class TestBinding(TestCase):
         self.assertEqual(_lib.TableFree.argtypes, [ctypes.POINTER(ctypes.c_ulonglong)])
         self.assertIsNone(_lib.TableFree.restype)
 
-    def test_str_from_c(self):
+    def test_py_str(self):
         c_string = ctypes.create_string_buffer(b'Foo!')
-        self.assertEqual(Binding.str_from_c(c_string), 'Foo!')
+        self.assertEqual(Binding.py_str(c_string), 'Foo!')
 
     # noinspection PyUnresolvedReferences
     @mock.patch.object(_lib, 'StringFree', mock.Mock())
