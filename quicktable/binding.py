@@ -94,17 +94,24 @@ class Binding:
         return _lib.TableAppend(self.table)
 
     def table_len(self):
+        """The number of rows within self.table."""
         return _lib.TableLen(self.table)
 
     def table_width(self):
+        """The number of columns within self.table."""
         return _lib.TableWidth(self.table)
 
     @contextmanager
-    def free_cstring(self, cstring_ptr):
+    def free_cstring(self, cstring):
+        """Context manager to free a cstring after converting to a Python string.
+
+        :param cstring: a pointer to a cstring
+
+        """
         try:
-            yield self.py_str(cstring_ptr)
+            yield self.py_str(cstring)
         finally:
-            self.free_string(cstring_ptr)
+            self.free_string(cstring)
 
     def table_column_name(self, i):
         """Return the name of the column at index i within self.table.
