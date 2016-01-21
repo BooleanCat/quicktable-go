@@ -12,7 +12,7 @@ LIB_PATH = os.path.join(FILE_PATH, 'libquicktable.so')
 _lib = cdll.LoadLibrary(LIB_PATH)
 
 
-BINDING_PARAMS = {
+_BINDING_PARAMS = {
     'StringFree': {
         'argtypes': [p_c_char],
     },
@@ -47,18 +47,21 @@ BINDING_PARAMS = {
 }
 
 
-for lib_func, params in BINDING_PARAMS.items():
+for lib_func, params in _BINDING_PARAMS.items():
     getattr(_lib, lib_func).argtypes = params.get('argtypes')
     getattr(_lib, lib_func).restype = params.get('restype')
 
 
 class Binding:
+    """A Python wrapper around the quicktable shared library"""
+
     @staticmethod
     def py_str(cstring_ptr, encoding='UTF-8'):
         """Create a Python string from a null-terminated C string.
 
         :param cstring_ptr: pointer to a null-terminated C string
-        :param encoding: encoding of the C String
+        :param encoding: encoding of the C String, defaults to UTF-8
+        :returns: a Python string constructed by cstring_ptr
 
         """
         return ctypes.cast(cstring_ptr, ctypes.c_char_p).value.decode(encoding)
@@ -74,15 +77,30 @@ class Binding:
 
     @staticmethod
     def table_new():
+        """Create a new instance of a table within the shared library.
+
+        :returns: An unsigned 64-bit integer pointer to the table.
+
+        """
         return _lib.TableNew()
 
     def __init__(self, table):
         self.table = table
 
     def table_free(self):
+        """Free the table within the shared library.
+
+        Use of this table after calling this function will cause crashes.
+
+        """
         return _lib.TableFree(self.table)
 
     def init_columns(self, schema):
+        """Instantiate self.table with columns according to this schema.
+
+        :param schema: a list of (Name, Type) column descriptions.
+
+        """
         for name, kind in schema:
             _lib.TableNewColumn(
                 self.table,
