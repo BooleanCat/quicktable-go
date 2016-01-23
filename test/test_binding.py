@@ -42,9 +42,21 @@ class TestBinding(TestCase):
         self.assertEqual(_lib.TableWidth.argtypes, [ctypes.POINTER(ctypes.c_ulonglong)])
         self.assertEqual(_lib.TableWidth.restype, ctypes.c_longlong)
 
-    def test_table_append(self):
-        self.assertEqual(_lib.TableAppend.argtypes, [ctypes.POINTER(ctypes.c_ulonglong)])
-        self.assertIsNone(_lib.TableAppend.restype)
+    def test_table_column_append_int(self):
+        self.assertEqual(_lib.TableColumnAppendInt.argtypes, [
+            ctypes.POINTER(ctypes.c_ulonglong),
+            ctypes.c_longlong,
+            ctypes.c_longlong
+        ])
+        self.assertIsNone(_lib.TableColumnAppendInt.restype)
+
+    def test_table_column_append_string(self):
+        self.assertEqual(_lib.TableColumnAppendString.argtypes, [
+            ctypes.POINTER(ctypes.c_ulonglong),
+            ctypes.c_longlong,
+            ctypes.POINTER(ctypes.c_char),
+        ])
+        self.assertIsNone(_lib.TableColumnAppendString.restype)
 
     def test_table_free(self):
         self.assertEqual(_lib.TableFree.argtypes, [ctypes.POINTER(ctypes.c_ulonglong)])
@@ -63,4 +75,4 @@ class TestBinding(TestCase):
             binding = Binding(table)
 
             self.assertEqual(binding.table_column_name(0), 'Foo!')
-            _lib.StringFree.assert_called_with(c_string)
+            _lib.StringFree.assert_called_once_with(c_string)

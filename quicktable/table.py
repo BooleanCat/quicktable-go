@@ -4,7 +4,7 @@ from quicktable.binding import Binding
 
 class Table:
     VALID_COLUMN_NAME = re.compile(r'^[A-Za-z\d]+$')
-    VALID_COLUMN_TYPES = ['string']
+    VALID_COLUMN_TYPES = {'string': str, 'int': int}
 
     def __init__(self, schema):
         schema = self.validate_schema(schema)
@@ -48,11 +48,28 @@ class Table:
         """Return the schema of the table."""
         return list(zip(self.column_names, self.column_types))
 
-    def append(self):
-        self.binding.table_append()
+    def append(self, row):
+        for (name, typ), element in zip(self.schema, row):
+            if not isinstance(element, self.VALID_COLUMN_TYPES[typ]):
+                raise TypeError('Column %s expects %s, got %s.' % (
+                    name,
+                    self.VALID_COLUMN_TYPES[typ],
+                    type(element)
+                ))
+
+        self.binding.table_append(row)
 
     def __len__(self):
         return self.binding.table_len()
+
+    def __getitem__(self, row_index):
+        if row_index < 0:
+            row_index = abs(row_index + len(self))
+
+        if row_index > len(self) - 1:
+            raise IndexError('Table index out of range')
+
+        return self.binding.table_row(row_index)
 
     def __del__(self):
         """Free the underlying table.

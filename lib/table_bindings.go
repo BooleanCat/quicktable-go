@@ -15,9 +15,35 @@ func TableWidth(table *uint64) int {
 	return tables[table].Width()
 }
 
-//export TableAppend
-func TableAppend(table *uint64) {
-	tables[table].Append()
+//export TableColumnAppendInt
+func TableColumnAppendInt(table *uint64, i, value int) {
+	tables[table].columns[i].Append(interface{}(value))
+}
+
+//export TableColumnAppendString
+func TableColumnAppendString(table *uint64, i int, value *C.char) {
+	tables[table].columns[i].Append(interface{}(C.GoString(value)))
+}
+
+//export TableColumnGetInt
+func TableColumnGetInt(table *uint64, col, row int) int {
+	if element, ok := tables[table].columns[col].GetItem(row).(int); ok {
+		return element
+	}
+	return -1
+}
+
+//export TableColumnGetString
+func TableColumnGetString(table *uint64, col, row int) *C.char {
+	if element, ok := tables[table].columns[col].GetItem(row).(string); ok {
+		return C.CString(element)
+	}
+	return C.CString("")
+}
+
+//export TableRowInc
+func TableRowInc(table *uint64) {
+	tables[table].size++
 }
 
 //export TableColumnName

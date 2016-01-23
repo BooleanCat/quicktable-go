@@ -38,12 +38,26 @@ _BINDING_PARAMS = {
         'argtypes': [p_c_ulonglong],
         'restype': ctypes.c_longlong,
     },
-    'TableAppend': {
-        'argtypes': [p_c_ulonglong],
+    'TableColumnAppendInt': {
+        'argtypes': [p_c_ulonglong, ctypes.c_longlong, ctypes.c_longlong],
+    },
+    'TableColumnAppendString': {
+        'argtypes': [p_c_ulonglong, ctypes.c_longlong, p_c_char]
+    },
+    'TableColumnGetInt': {
+        'argtypes': [p_c_ulonglong, ctypes.c_longlong, ctypes.c_longlong],
+        'restype': ctypes.c_longlong,
+    },
+    'TableColumnGetString': {
+        'argtypes': [p_c_ulonglong, ctypes.c_longlong, ctypes.c_longlong],
+        'restype': p_c_char,
     },
     'TableFree': {
         'argtypes': [p_c_ulonglong],
-    }
+    },
+    'TableRowInc': {
+        'argtypes': [p_c_ulonglong],
+    },
 }
 
 
@@ -74,6 +88,18 @@ class Binding:
 
         """
         return _lib.StringFree(cstring_ptr)
+
+    @contextmanager
+    def free_cstring(self, cstring):
+        """Context manager to free a cstring after converting to a Python string.
+
+        :param cstring: a pointer to a cstring
+
+        """
+        try:
+            yield self.py_str(cstring)
+        finally:
+            self.free_string(cstring)
 
     @staticmethod
     def table_new():
@@ -108,8 +134,26 @@ class Binding:
                 ctypes.create_string_buffer(kind.encode())
             )
 
-    def table_append(self):
-        return _lib.TableAppend(self.table)
+    def table_append(self, row):
+        for i, element in enumerate(row):
+            if isinstance(element, int):
+                _lib.TableColumnAppendInt(self.table, i, element)
+            elif isinstance(element, str):
+                _lib.TableColumnAppendString(self.table, i, ctypes.create_string_buffer(element.encode()))
+
+        _lib.TableRowInc(self.table)
+
+    def table_row(self, i):
+        row = []
+        for column_index in range(self.table_width()):
+            column_type = self.table_column_type(column_index)
+
+            if column_type == 'int':
+                row.append(_lib.TableColumnGetInt(self.table, column_index, i))
+            elif column_type == 'string':
+                with self.free_cstring(_lib.TableColumnGetString(self.table, column_index, i)) as element:
+                    row.append(element)
+        return row
 
     def table_len(self):
         """The number of rows within self.table."""
@@ -118,18 +162,6 @@ class Binding:
     def table_width(self):
         """The number of columns within self.table."""
         return _lib.TableWidth(self.table)
-
-    @contextmanager
-    def free_cstring(self, cstring):
-        """Context manager to free a cstring after converting to a Python string.
-
-        :param cstring: a pointer to a cstring
-
-        """
-        try:
-            yield self.py_str(cstring)
-        finally:
-            self.free_string(cstring)
 
     def table_column_name(self, i):
         """Return the name of the column at index i within self.table.

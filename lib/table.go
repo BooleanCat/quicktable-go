@@ -1,8 +1,9 @@
 package main
 
+//Table TODO Write docstring
 type Table struct {
 	size    int
-	columns []*Column
+	columns []Column
 }
 
 //NewTable creates a new instance of Table
@@ -10,8 +11,14 @@ func NewTable() *Table {
 	return new(Table)
 }
 
+//NewColumn appends a new column to Table.data
 func (table *Table) NewColumn(name, kind string) {
-	table.columns = append(table.columns, &Column{name, kind})
+	switch kind {
+	case "string":
+		table.columns = append(table.columns, &ColumnString{name: name})
+	case "int":
+		table.columns = append(table.columns, &ColumnInt{name: name})
+	}
 }
 
 //Len returns the number of rows in the Table.
@@ -22,11 +29,6 @@ func (table *Table) Len() int {
 //Width returns the number of columns
 func (table *Table) Width() int {
 	return len(table.columns)
-}
-
-//Append increments the row count by 1
-func (table *Table) Append() {
-	table.size++
 }
 
 //ColumnName returns the column name at index i
