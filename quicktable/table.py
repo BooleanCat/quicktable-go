@@ -11,6 +11,7 @@ class Table:
         self._table_ptr = Binding.table_new()
         self.binding = Binding(self._table_ptr)
         self._init_columns(schema)
+        self._len_changed = True
 
     @classmethod
     def validate_schema(cls, schema):
@@ -58,9 +59,13 @@ class Table:
                 ))
 
         self.binding.table_append(row)
+        self._len_changed = True
 
     def __len__(self):
-        return self.binding.table_len()
+        if self._len_changed:
+            self._len = self.binding.table_len()
+            self._len_changed = False
+        return self._len
 
     def __getitem__(self, row_index):
         if row_index < 0:
