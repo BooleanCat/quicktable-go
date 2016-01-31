@@ -1,5 +1,5 @@
 language: python
 python: "3.5"
-before_install: "gimme 1.5.3"
+before_install: 'eval "$(gimme 1.5.3)"'
 install: "python setup.py install"
 script: "nosetests -P"
