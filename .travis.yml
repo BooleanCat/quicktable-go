@@ -1,14 +1,11 @@
 language: python
 python:
-    - "3.5.1"
-    - "3.4"
-    - "2.7"
-    - "2.6"
-os:
-    - linux
-    - osx
-before_install: 'eval "$(gimme 1.5.3)"'
-install: "python setup.py install"
+    - 3.5
+    - 3.4
+    - 2.7
+    - 2.6
+before_install: eval "$(gimme 1.5.3)"
+install: python setup.py install
 script:
-    - "cd test"
-    - "nosetests -P"
+    - cd test/
+    - nosetests -P
