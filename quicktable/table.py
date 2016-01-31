@@ -61,6 +61,10 @@ class Table:
         self.binding.table_append(row)
         self._len_changed = True
 
+    def extend(self, rows):
+        for row in rows:
+            self.append(row)
+
     def __len__(self):
         if self._len_changed:
             self._len = self.binding.table_len()

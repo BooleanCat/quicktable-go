@@ -79,3 +79,24 @@ class TestTable(TestCase):
     def test_slice_negative_index_error(self):
         """Slicing a table with a negative index to a row that doesn't exist raises an IndexError."""
         self.assertRaises(IndexError, lambda: self.table[-1])
+
+    def test_extend(self):
+        """A table can be extended with many rows."""
+        self.table.extend([
+            ['Tom', 26],
+            ['Chantelle', 24],
+            ['Deccy', 8],
+        ])
+
+        self.assertEqual(self.table[0], ['Tom', 26])
+        self.assertEqual(self.table[1], ['Chantelle', 24])
+        self.assertEqual(self.table[2], ['Deccy', 8])
+
+    def test_extend_len(self):
+        """Extend correctly sets the Table's len"""
+        self.table.extend([
+            ['Tom', 26],
+            ['Chantelle', 24],
+            ['Deccy', 8],
+        ])
+        self.assertEqual(len(self.table), 3)
