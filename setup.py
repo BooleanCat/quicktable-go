@@ -33,18 +33,14 @@ class InstallQuicktable(install):
     @staticmethod
     def rm_tree(path):
         print('removing %s' % path)
-        try:
+        if os.path.exists(path):
             shutil.rmtree(path)
-        except FileNotFoundError:
-            pass
 
     @staticmethod
     def unlink(path):
         print('removing %s' % path)
-        try:
+        if os.path.exists(path):
             os.unlink(path)
-        except FileNotFoundError:
-            pass
 
     @staticmethod
     def copy(source, target):
