@@ -25,18 +25,15 @@ class TestSchema(TestCase):
 
     def test_validate_schema_invalid_column(self):
         """A TypeError is raised if a column description doesn't contain 2 items."""
-        with self.assertRaises(TypeError):
-            Table([('Name',)])
+        self.assertRaises(TypeError, Table, [('Name',)])
 
     def test_validate_column_name(self):
         """A column name must only contain letters or numbers."""
-        with self.assertRaises(ValueError):
-            Table([('-', 'String')])
+        self.assertRaises(ValueError, Table, [('-', 'string')])
 
     def test_validate_column_types(self):
         """A column type must be of the valid types."""
-        with self.assertRaises(TypeError):
-            Table([('Name', 'Foo')])
+        self.assertRaises(TypeError, Table, [('Name', 'Foo')])
 
     def test_column_names(self):
         """Column names can be retrived from table."""

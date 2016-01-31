@@ -11,12 +11,12 @@ except ImportError:
 
 class TestBinding(TestCase):
     def test_table_new(self):
-        self.assertIsNone(_lib.TableNew.argtypes)
+        assert _lib.TableNew.argtypes is None
         self.assertEqual(_lib.TableNew.restype, ctypes.POINTER(ctypes.c_ulonglong))
 
     def test_free_string(self):
         self.assertEqual(_lib.StringFree.argtypes, [ctypes.POINTER(ctypes.c_char)])
-        self.assertIsNone(_lib.StringFree.restype)
+        assert _lib.StringFree.restype is None
 
     def test_table_column_name(self):
         self.assertEqual(
@@ -37,7 +37,7 @@ class TestBinding(TestCase):
             _lib.TableNewColumn.argtypes,
             [ctypes.POINTER(ctypes.c_ulonglong), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char)]
         )
-        self.assertIsNone(_lib.TableNewColumn.restype)
+        assert _lib.TableNewColumn.restype is None
 
     def test_table_len(self):
         self.assertEqual(_lib.TableLen.argtypes, [ctypes.POINTER(ctypes.c_ulonglong)])
@@ -53,7 +53,7 @@ class TestBinding(TestCase):
             ctypes.c_longlong,
             ctypes.c_longlong
         ])
-        self.assertIsNone(_lib.TableColumnAppendInt.restype)
+        assert _lib.TableColumnAppendInt.restype is None
 
     def test_table_column_append_string(self):
         self.assertEqual(_lib.TableColumnAppendString.argtypes, [
@@ -61,11 +61,11 @@ class TestBinding(TestCase):
             ctypes.c_longlong,
             ctypes.POINTER(ctypes.c_char),
         ])
-        self.assertIsNone(_lib.TableColumnAppendString.restype)
+        assert _lib.TableColumnAppendString.restype is None
 
     def test_table_free(self):
         self.assertEqual(_lib.TableFree.argtypes, [ctypes.POINTER(ctypes.c_ulonglong)])
-        self.assertIsNone(_lib.TableFree.restype)
+        assert _lib.TableFree.restype is None
 
     def test_py_str(self):
         c_string = ctypes.create_string_buffer(b'Foo!')
