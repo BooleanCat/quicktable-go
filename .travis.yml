@@ -3,5 +3,5 @@ python: "3.5"
 before_install: 'eval "$(gimme 1.5.3)"'
 install: "python setup.py install"
 script:
-    - "cd $CI_HOME/project/test"
+    - "cd test"
     - "nosetests -P"
