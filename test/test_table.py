@@ -1,5 +1,5 @@
 from quicktable import Table
-from unittest import TestCase
+from unittest import TestCase, mock
 
 
 class TestTable(TestCase):
@@ -28,6 +28,21 @@ class TestTable(TestCase):
         self.table.append(['Chantelle', 24])
         self.table.append(['Deccy', 8])
         self.assertEqual(len(self.table), 3)
+
+    def test_len_cached(self):
+        """Repeated calls to len do not invoke Go unless a change is detected."""
+        with mock.patch.object(self.table.binding, 'table_len', mock.Mock(return_value=0)) as table_len:
+            self.assertEqual(table_len.call_count, 0)
+
+            len(self.table)
+            self.assertEqual(table_len.call_count, 1)
+
+            len(self.table)
+            self.assertEqual(table_len.call_count, 1)
+
+            self.table.append(['Tom', 26])
+            len(self.table)
+            self.assertEqual(table_len.call_count, 2)
 
     def test_slice_single_first(self):
         """Slicing a table returns the row at 0 index."""

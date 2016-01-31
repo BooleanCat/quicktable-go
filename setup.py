@@ -6,7 +6,7 @@ from setuptools.command.install import install
 
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-LIB_DIR = os.path.join(PROJECT_DIR, 'lib')
+LIB_DIR = os.path.join(PROJECT_DIR, 'go', 'src', 'quicktable')
 PKG_DIR = os.path.join(PROJECT_DIR, 'pkg')
 BUILD_DIR = os.path.join(PROJECT_DIR, 'build')
 SOURCE_DIR = os.path.join(PROJECT_DIR, 'quicktable')
