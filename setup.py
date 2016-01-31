@@ -24,7 +24,7 @@ class InstallQuicktable(install):
         self.build_go()
         self.copy(os.path.join(PKG_DIR, self.LIB_NAME), SOURCE_DIR)
 
-        super().run()
+        super(InstallQuicktable, self).run()
 
         self.rm_tree(PKG_DIR)
         self.rm_tree(os.path.join(PROJECT_DIR, 'quicktable.egg-info'))
