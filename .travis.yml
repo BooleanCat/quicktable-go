@@ -4,6 +4,9 @@ python:
     - "3.4"
     - "2.7"
     - "2.6"
+os:
+    - linux
+    - osx
 before_install: 'eval "$(gimme 1.5.3)"'
 install: "python setup.py install"
 script:
