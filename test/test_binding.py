@@ -1,7 +1,12 @@
 import ctypes
-from unittest import TestCase, mock
+from unittest import TestCase
 # noinspection PyProtectedMember
 from quicktable.binding import _lib, Binding
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 class TestBinding(TestCase):
