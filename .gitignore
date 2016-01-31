@@ -4,3 +4,5 @@ build/
 pkg/
 .DS_Store
 __pycache__/
+go/
+!go/src/quicktable
